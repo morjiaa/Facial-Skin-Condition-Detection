@@ -237,7 +237,22 @@ def _expanded_box(image, box_xyxy, padding_ratio: float = 0.0) -> tuple[int, int
     return x1, y1, x2, y2
 
 
-def _save_full_face_gradcam(image, box_xyxy, gradcam_path, prefix: str, padding_ratio: float = 0.0) -> Optional[Path]:
+def _context_box_around_target(image, box_xyxy, area_ratio: float = 0.25) -> tuple[int, int, int, int]:
+    width, height = image.size
+    x1, y1, x2, y2 = [float(v) for v in box_xyxy]
+    center_x = (x1 + x2) / 2
+    center_y = (y1 + y2) / 2
+    scale = area_ratio**0.5
+    crop_width = max(1, int(round(width * scale)))
+    crop_height = max(1, int(round(height * scale)))
+    left = int(round(center_x - crop_width / 2))
+    top = int(round(center_y - crop_height / 2))
+    left = max(0, min(left, width - crop_width))
+    top = max(0, min(top, height - crop_height))
+    return left, top, left + crop_width, top + crop_height
+
+
+def _save_context_gradcam(image, box_xyxy, gradcam_path, prefix: str, padding_ratio: float = 0.0) -> Optional[Path]:
     if not gradcam_path:
         return None
     source_path = Path(gradcam_path)
@@ -246,15 +261,24 @@ def _save_full_face_gradcam(image, box_xyxy, gradcam_path, prefix: str, padding_
 
     create_output_dirs()
     x1, y1, x2, y2 = _expanded_box(image, box_xyxy, padding_ratio=padding_ratio)
-    full_face = image.convert("RGB").copy()
+    cx1, cy1, cx2, cy2 = _context_box_around_target(image, box_xyxy, area_ratio=0.25)
+    context = image.convert("RGB").crop((cx1, cy1, cx2, cy2))
 
     from PIL import Image
 
     overlay = Image.open(source_path).convert("RGB").resize((x2 - x1, y2 - y1))
-    full_face.paste(overlay, (x1, y1))
+    ix1 = max(x1, cx1)
+    iy1 = max(y1, cy1)
+    ix2 = min(x2, cx2)
+    iy2 = min(y2, cy2)
+    if ix2 <= ix1 or iy2 <= iy1:
+        return None
+
+    overlay_crop = overlay.crop((ix1 - x1, iy1 - y1, ix2 - x1, iy2 - y1))
+    context.paste(overlay_crop, (ix1 - cx1, iy1 - cy1))
 
     output_path = config.OUTPUT_DIR / "gradcam" / f"{prefix}_{timestamp()}.png"
-    full_face.save(output_path)
+    context.save(output_path)
     return output_path
 
 
@@ -454,14 +478,14 @@ def _build_detail_items(image, result: Dict, uploaded_image_url: Optional[str]) 
                 else config.LOW_CONFIDENCE_CROP_PADDING
             )
             candidate_gradcam_path = candidate_gradcam.get("path") if candidate_gradcam else None
-            full_face_gradcam_path = _save_full_face_gradcam(
+            context_gradcam_path = _save_context_gradcam(
                 image,
                 detection["box_xyxy"],
                 candidate_gradcam_path,
-                f"full_face_gradcam_{index}",
+                f"context_gradcam_{index}",
                 padding_ratio=padding_ratio,
             )
-            candidate_gradcam_url = _public_output_url(full_face_gradcam_path or candidate_gradcam_path)
+            candidate_gradcam_url = _public_output_url(context_gradcam_path or candidate_gradcam_path)
             crop_path = _save_crop(
                 image,
                 detection["box_xyxy"],
