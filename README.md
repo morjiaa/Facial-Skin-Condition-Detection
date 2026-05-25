@@ -14,7 +14,10 @@ The application does not force every image through both models. If YOLOv8m provi
 
 The project uses three datasets with different label spaces:
 
-- Dataset A: YOLOv8m object detection dataset with 15 bounding-box classes.
+- Dataset A: YOLOv8m object detection dataset with 15 bounding-box classes:
+  `Acne`, `Blackhead`, `Conglobata`, `Crystalline`, `Cystic`, `Flat Wart`,
+  `Folliculitis`, `Keloid`, `Milium`, `Papular`, `Purulent`, `Scars`,
+  `Sebo-crystan-conglo`, `Syringoma`, and `Whitehead`.
 - Dataset B: ResNet18 broad skin condition classification dataset with 6 classes.
 - Dataset C: ResNet18 acne subtype classification dataset with 5 classes.
 
