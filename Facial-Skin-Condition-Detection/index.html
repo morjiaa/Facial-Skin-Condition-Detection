@@ -1,0 +1,292 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DermaScanner Skin Check</title>
+    <link rel="stylesheet" href="styles.css?v=20260523-facecrop" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <button class="brand nav-item active" data-view="home" aria-label="Go to home">
+          <span class="brand-mark">DS</span>
+          <span>
+            <strong>DermaScanner</strong>
+            <small>AI visual analysis</small>
+          </span>
+        </button>
+        <button class="primary-action" id="startScanTop">Scan now</button>
+      </header>
+
+      <main>
+        <section class="view active" id="home">
+          <div class="hero-band">
+            <div class="hero-copy">
+              <p class="eyebrow">Private educational visual analysis</p>
+              <h1>Understand your acne spots from a selfie.</h1>
+              <p>
+                Take or upload a face photo to see detected acne regions, educational severity guidance, and a
+                heatmap explanation for uncertain spots.
+              </p>
+              <div class="hero-actions">
+                <button class="primary-action" id="startScanHero">Start visual analysis</button>
+              </div>
+            </div>
+
+            <div class="phone-preview" aria-label="Mobile skin scan preview">
+              <div class="phone-frame">
+                <div class="phone-status"></div>
+                <div class="scan-preview">
+                  <div class="phone-analysis-preview">
+                    <img src="hero-preview.jpg" alt="Example facial skin visual analysis" />
+                    <span class="preview-box preview-box-a" data-label="Rosacea"></span>
+                    <span class="preview-box preview-box-b" data-label="Texture"></span>
+                    <span class="preview-box preview-box-c" data-label="Redness"></span>
+                  </div>
+                </div>
+                <div class="mini-result">
+                  <strong>Visual analysis</strong>
+                  <span>Example concern regions · educational preview</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="trust-strip" aria-label="How the scan works">
+            <article>
+              <strong>1</strong>
+              <span>Upload or take selfie</span>
+            </article>
+            <article>
+              <strong>2</strong>
+              <span>AI detects acne regions</span>
+            </article>
+            <article>
+              <strong>3</strong>
+              <span>View analysis</span>
+            </article>
+          </div>
+
+          <div class="education-grid">
+            <article>
+              <span class="condition-mark comedone"></span>
+              <h3>Comedones</h3>
+              <p>Blackheads and whiteheads are usually lower risk unless they become widespread.</p>
+            </article>
+            <article>
+              <span class="condition-mark papule"></span>
+              <h3>Inflamed spots</h3>
+              <p>Papules and pustules can raise the severity score when clustered together.</p>
+            </article>
+            <article>
+              <span class="condition-mark cystic"></span>
+              <h3>Deep lesions</h3>
+              <p>Cystic or painful acne should be reviewed by a dermatologist rather than self-treated.</p>
+            </article>
+          </div>
+        </section>
+
+        <section class="view" id="scan">
+          <div class="section-heading centered">
+            <p class="eyebrow">New visual analysis</p>
+            <h2>Add a clear face photo</h2>
+            <p>Use natural lighting and keep your face centered for more reliable detection.</p>
+          </div>
+
+          <div class="scan-card">
+            <div class="upload-zone" id="uploadZone">
+              <input id="fileInput" type="file" accept="image/*" hidden />
+              <input id="cameraInput" type="file" accept="image/*" capture="user" hidden />
+              <div class="upload-prompt" id="uploadPrompt">
+                <div class="upload-icon">↑</div>
+                <h3>Upload selfie</h3>
+                <p>Tap to choose a photo source.</p>
+                <p class="file-name" id="fileName">No image selected</p>
+              </div>
+              <div class="source-choice" id="sourceChoice" hidden>
+                <button class="secondary-action" id="browseBtn">Choose from album</button>
+                <button class="secondary-action" id="cameraBtn">Use camera</button>
+              </div>
+              <div class="camera-review" id="cameraReview" hidden>
+                <video id="cameraVideo" autoplay playsinline hidden></video>
+                <canvas id="cameraCanvas" hidden></canvas>
+                <span class="focus-ring"></span>
+                <button class="secondary-action camera-back" id="cameraBackBtn">Back</button>
+                <button class="primary-action" id="captureBtn">Capture photo</button>
+              </div>
+              <div class="photo-review" id="photoReview" hidden>
+                <img id="selectedPreview" alt="Selected face preview" />
+                <div class="photo-review-actions">
+                  <button class="primary-action" id="startAnalysisBtn">Start detection</button>
+                  <button class="secondary-action" id="reuploadBtn">Upload again</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="view" id="processing">
+          <div class="processing-panel">
+            <div class="scanner-animation">
+              <span></span>
+            </div>
+            <p class="eyebrow">Analysing photo</p>
+            <h2>Finding acne regions and explaining uncertain spots</h2>
+            <div class="inference-steps">
+              <span>Detecting with YOLOv8m</span>
+              <span>Checking confidence</span>
+              <span>Refining crops with ResNet18</span>
+              <span>Generating Grad-CAM</span>
+            </div>
+            <div class="progress-track">
+              <div class="progress-fill"></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="view" id="results">
+          <div class="section-heading results-heading">
+            <div>
+              <p class="eyebrow" id="reportEyebrow">Your sample report</p>
+              <h2 id="reportTitle">Moderate acne activity detected</h2>
+              <p id="reportSubtitle">Tap any highlighted region to see why the AI classified it that way.</p>
+            </div>
+            <button class="secondary-action" id="newScanBtn">New scan</button>
+          </div>
+
+          <div class="report-layout">
+            <div class="image-result">
+              <div class="analysis-stage" id="analysisStage" hidden>
+                <img class="analysis-image" id="analysisImage" alt="Uploaded image with detection boxes" />
+                <div class="detection-overlay" id="detectionOverlay"></div>
+              </div>
+              <div class="result-face">
+                <span class="shoulders"></span>
+                <span class="neck"></span>
+                <span class="hair"></span>
+                <span class="ear left-ear"></span>
+                <span class="ear right-ear"></span>
+                <span class="face"></span>
+                <span class="eye left-eye"></span>
+                <span class="eye right-eye"></span>
+                <span class="nose"></span>
+                <span class="mouth"></span>
+                <button class="detection d1 active" data-lesion="Papular">Papular 92%</button>
+                <button class="detection d2" data-lesion="Blackhead">Blackhead 88%</button>
+                <button class="detection d3 refined" data-lesion="Purulent">Purulent 93%</button>
+                <button class="detection d4 refined" data-lesion="Whitehead">Whitehead 91%</button>
+              </div>
+            </div>
+
+            <div class="report-summary">
+              <div class="severity-box">
+                <span>Overall Visual Severity</span>
+                <strong id="severityValue">Moderate</strong>
+                <p id="severityText">Inflamed spots are present, but no cystic cluster is detected in this sample.</p>
+              </div>
+
+              <div class="quick-stats">
+                <div>
+                  <span>Number of Detected Concern Regions</span>
+                  <strong id="areasFound">18</strong>
+                </div>
+              </div>
+
+              <div class="count-list" id="countList">
+                <div><span class="chip papular"></span>Papular <strong>6</strong></div>
+                <div><span class="chip blackhead"></span>Blackhead <strong>5</strong></div>
+                <div><span class="chip purulent"></span>Purulent <strong>4</strong></div>
+                <div><span class="chip whitehead"></span>Whitehead <strong>3</strong></div>
+              </div>
+
+              <p class="model-source-note" id="modelSource">Model source: YOLOv8m</p>
+
+            </div>
+          </div>
+        </section>
+
+        <section class="view" id="detail">
+          <div class="section-heading results-heading">
+            <div>
+              <p class="eyebrow">Selected Concern Explanation</p>
+              <h2 id="detailTitle">Papular lesion</h2>
+            </div>
+            <button class="secondary-action" id="backToResults">Back to report</button>
+          </div>
+
+          <div class="detail-layout">
+            <div class="lesion-magnifier">
+              <div class="crop-tabs" role="tablist" aria-label="Lesion explanation views">
+                <button class="active" data-mode="gradcam">Grad-CAM</button>
+                <button data-mode="crop">Original crop</button>
+              </div>
+              <div class="magnified-skin gradcam-on" id="gradcamView">
+                <img class="gradcam-image" id="gradcamImage" alt="Selected explanation image" hidden />
+                <span></span>
+                <div class="heatmap-core"></div>
+              </div>
+              <div class="confidence-ring">
+                <strong id="detailConfidence">92%</strong>
+                <span>confidence</span>
+              </div>
+            </div>
+
+            <div class="recommendation-panel">
+              <div class="model-decision">
+                <div>
+                  <span>Detected by</span>
+                  <strong id="yoloDecision">Papular · 92%</strong>
+                </div>
+                <div>
+                  <span>Second check</span>
+                  <strong id="resnetDecision">Not required</strong>
+                </div>
+                <div>
+                  <span>Explanation</span>
+                  <strong id="gradcamDecision">Grad-CAM highlights lesion centre</strong>
+                </div>
+              </div>
+
+              <h3>Visual Pattern Analysis</h3>
+              <p id="gradcamText">
+                The highlighted heatmap region overlaps with the raised inflamed area inside the YOLO
+                bounding box, supporting the papular classification.
+              </p>
+
+              <h3>Suggested Next Steps</h3>
+              <p id="recommendationText">
+                Review the model output as an educational prediction only. Consult a qualified clinician
+                for medical concerns.
+              </p>
+
+              <div class="do-dont">
+                <div>
+                  <h4>Try</h4>
+                  <p id="useText">Good lighting, centered face image, clear crop review.</p>
+                </div>
+                <div>
+                  <h4>Avoid</h4>
+                  <p id="avoidText">Treating this educational prediction as treatment advice.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <footer>
+          Disclaimer: This system is developed for educational demonstration purposes only. The results are AI-generated visual predictions and should not be used as medical diagnosis or treatment advice. If you are concerned about a real skin condition, please consult a qualified healthcare professional.
+        </footer>
+      </main>
+
+      <nav class="bottom-nav" aria-label="Mobile navigation">
+        <button class="nav-item active" data-view="home">Home</button>
+        <button class="nav-item" data-view="scan">Scan</button>
+        <button class="nav-item" data-view="results">Report</button>
+        <button class="nav-item" data-view="detail">Explain</button>
+      </nav>
+    </div>
+
+    <script src="script.js?v=20260523-facecrop"></script>
+  </body>
+</html>

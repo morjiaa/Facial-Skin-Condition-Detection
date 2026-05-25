@@ -1,0 +1,43 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Virtual environments
+.venv/
+venv/
+env/
+skin-detection-env/
+
+# OS/editor
+.DS_Store
+.vscode/
+.idea/
+
+# Generated outputs
+outputs/uploads/*
+outputs/yolo/*
+outputs/gradcam/*
+!outputs/uploads/.gitkeep
+!outputs/yolo/.gitkeep
+!outputs/gradcam/.gitkeep
+
+# Model weights
+*.pt
+*.pth
+*.onnx
+*.h5
+!weights/.gitkeep
+
+# Raw or teammate datasets/models
+classmate/
+acne04v2-main/
+acne_model/
+downloaded-image*.jpg
+
+# Nested repositories should not be committed
+Facial-Skin-Condition-Detection/.git/
